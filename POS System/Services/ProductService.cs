@@ -1,23 +1,34 @@
 ﻿using POS_System.Data;
 using POS_System.Entities;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace POS_System.Services
 {
     public class ProductService
     {
-        public void AddProduct(Product product, User admin)
+        private readonly DataContextEntity _context;
+
+        public ProductService(DataContextEntity context)
+        {
+            _context = context;
+        }
+
+        public async Task AddProduct(Product product, User admin)
         {
             if (admin.Role == UserRole.Admin)
             {
-                DataContext.Products.Add(product);
+                await _context.Products.AddAsync(product);
+                await _context.SaveChangesAsync();
             }
         }
 
-        public void RemoveProduct(Product product, User admin)
+        public async Task RemoveProduct(Product product, User admin)
         {
             if (admin.Role == UserRole.Admin)
             {
-                DataContext.Products.Remove(product);
+                _context.Products.Remove(product);
+                await _context.SaveChangesAsync();
             }
         }
 
@@ -29,6 +40,8 @@ namespace POS_System.Services
         public void UpdateProductQuantity(Product product, int quantity)
         {
             product.Quantity -= quantity;
+            _context.Products.Update(product);
+            _context.SaveChanges();
         }
     }
 }

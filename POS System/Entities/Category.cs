@@ -2,8 +2,13 @@
 {
     public class Category
     {
-        public string Name { get; private set; }
+        public int Id { get; set; } // Primary key
+        public string Name { get; set; }
 
+        // Parameterless constructor for EF
+        public Category() { }
+
+        // Constructor for convenience
         public Category(string name)
         {
             Name = name;

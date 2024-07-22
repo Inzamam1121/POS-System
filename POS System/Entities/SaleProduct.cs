@@ -1,46 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace POS_System.Entities
 {
     public class SaleProduct
     {
-        public List<Product> Products { get; set; }
-        public List<int> Quantities { get; set; }
+        public int SaleProductId { get; set; }
+        public int SaleId { get; set; }
+        public Sale Sale { get; set; }
 
-        public SaleProduct()
-        {
-            Products = new List<Product>();
-            Quantities = new List<int>();
-        }
+        public int ProductId { get; set; }
+        public Product Product { get; set; }
 
-        public void AddProduct(Product product, int quantity)
+        public int Quantity { get; set; }
+
+        // Parameterless constructor for EF
+        public SaleProduct() { }
+
+        public void AddProduct(int quantity)
         {
-            int index = Products.IndexOf(product);
-            if (index >= 0)
-            {
-                Quantities[index] += quantity;
-            }
-            else
-            {
-                Products.Add(product);
-                Quantities.Add(quantity);
-            }
+            Quantity += quantity;
         }
 
         public decimal TotalAmount
         {
             get
             {
-                decimal total = 0;
-                for (int i = 0; i < Products.Count; i++)
-                {
-                    total += Products[i].Price * Quantities[i];
-                }
-                return total;
+                return Product.Price * Quantity;
             }
         }
     }

@@ -1,100 +1,116 @@
-﻿using POS_System.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using POS_System.Data;
 using POS_System.Entities;
 using POS_System.Services;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 class Program
 {
-    static void Main()
+    static async Task Main()
     {
-        UserService userService = new UserService();
-        ProductService productService = new ProductService();
-        SaleTransactionService saleTransactionService = new SaleTransactionService();
+        var host = CreateHostBuilder().Build();
 
-        // Create and register an admin user
-        User admin = new User("Admin", "admin@gmail.com", "admin", UserRole.Admin);
-        userService.RegisterUser(admin);
-
-        // Create and register a cashier user
-        User cashier = new User("Cashier", "cashier@gmail.com", "cashier", UserRole.Cashier);
-        userService.RegisterUser(cashier);
-
-        // Add categories
-        Category electronicsCategory = new Category("Electronics");
-        DataContext.Categories.Add(electronicsCategory);
-
-        // Add products
-        Product product1 = new Product("Laptop", 1200.00m, 10, "Gadget", electronicsCategory);
-        Product product2 = new Product("Smartphone", 800.00m, 20, "Gadget", electronicsCategory);
-        productService.AddProduct(product1, admin);
-        productService.AddProduct(product2, admin);
-
-        while (true)
+        using (var scope = host.Services.CreateScope())
         {
-            Console.Clear();
-            Console.WriteLine("=================================");
-            Console.WriteLine("        POS System Main Menu     ");
-            Console.WriteLine("=================================");
-            Console.WriteLine("1. Register User");
-            Console.WriteLine("2. Login");
-            Console.WriteLine("3. Exit");
-            Console.Write("Select an option: ");
-            string option = Console.ReadLine();
+            var services = scope.ServiceProvider;
 
-            if (option == "1")
+            var userService = services.GetRequiredService<UserService>();
+            var productService = services.GetRequiredService<ProductService>();
+            var saleTransactionService = services.GetRequiredService<SaleTransactionService>();
+            var context = services.GetRequiredService<DataContextEntity>();
+
+            // Create and register an admin user
+            var admin = new User("Admin", "admin@gmail.com", "admin", UserRole.Admin);
+            userService.RegisterUser(admin);
+
+            // Create and register a cashier user
+            var cashier = new User("Cashier", "cashier@gmail.com", "cashier", UserRole.Cashier);
+            userService.RegisterUser(cashier);
+
+            // Add categories
+            var electronicsCategory = new Category { Name = "Electronics" };
+            context.Categories.Add(electronicsCategory);
+            context.SaveChanges();
+
+            // Add products
+            var product1 = new Product { Name = "Laptop", Price = 1200.00m, Quantity = 10, Type = "Gadget", Category = electronicsCategory };
+            var product2 = new Product { Name = "Smartphone", Price = 800.00m, Quantity = 20, Type = "Gadget", Category = electronicsCategory };
+            productService.AddProduct(product1, admin);
+            productService.AddProduct(product2, admin);
+            context.SaveChanges();
+
+            // Main Menu loop
+            while (true)
             {
-                Console.Write("Name: ");
-                string name = Console.ReadLine();
-                Console.Write("Email: ");
-                string email = Console.ReadLine();
-                Console.Write("Password: ");
-                string password = Console.ReadLine();
+                Console.Clear();
+                Console.WriteLine("=================================");
+                Console.WriteLine("        POS System Main Menu     ");
+                Console.WriteLine("=================================");
+                Console.WriteLine("1. Register User");
+                Console.WriteLine("2. Login");
+                Console.WriteLine("3. Exit");
+                Console.Write("Select an option: ");
+                var option = Console.ReadLine();
 
-                User newUser = new User(name, email, password, UserRole.Cashier); // Default role is cashier
-                userService.RegisterUser(newUser);
-                Console.WriteLine("User registered successfully. Please contact admin to assign role.");
-                Console.ReadLine();
-            }
-            else if (option == "2")
-            {
-                Console.Write("Email: ");
-                string email = Console.ReadLine();
-                Console.Write("Password: ");
-                string password = Console.ReadLine();
-
-                User loggedInUser = userService.AuthenticateUser(email, password);
-
-                if (loggedInUser != null)
+                if (option == "1")
                 {
-                    if (loggedInUser.Role == UserRole.Admin)
+                    Console.Write("Name: ");
+                    var name = Console.ReadLine();
+                    Console.Write("Email: ");
+                    var email = Console.ReadLine();
+                    Console.Write("Password: ");
+                    var password = Console.ReadLine();
+
+                    var newUser = new User(name, email, password, UserRole.Cashier); // Default role is cashier
+                    userService.RegisterUser(newUser);
+                    context.SaveChanges();
+                    Console.WriteLine("User registered successfully. Please contact admin to assign role.");
+                    Console.ReadLine();
+                }
+                else if (option == "2")
+                {
+                    Console.Write("Email: ");
+                    var email = Console.ReadLine();
+                    Console.Write("Password: ");
+                    var password = Console.ReadLine();
+
+                    var loggedInUser = userService.AuthenticateUser(email, password);
+
+                    if (loggedInUser != null)
                     {
-                        AdminMenu(loggedInUser, productService, userService);
+                        if (loggedInUser.Role == UserRole.Admin)
+                        {
+                            await AdminMenuAsync(loggedInUser, productService, userService, context);
+                        }
+                        else if (loggedInUser.Role == UserRole.Cashier)
+                        {
+                            await CashierMenuAsync(loggedInUser, saleTransactionService, productService, context);
+                        }
                     }
-                    else if (loggedInUser.Role == UserRole.Cashier)
+                    else
                     {
-                        CashierMenu(loggedInUser, saleTransactionService, productService);
+                        Console.WriteLine("Invalid credentials. Please try again.");
+                        Console.ReadLine();
                     }
+                }
+                else if (option == "3")
+                {
+                    break;
                 }
                 else
                 {
-                    Console.WriteLine("Invalid credentials. Please try again.");
+                    Console.WriteLine("Invalid option. Please try again.");
                     Console.ReadLine();
                 }
-            }
-            else if (option == "3")
-            {
-                break;
-            }
-            else
-            {
-                Console.WriteLine("Invalid option. Please try again.");
-                Console.ReadLine();
             }
         }
     }
 
-    static void AdminMenu(User admin, ProductService productService, UserService userService)
+    static async Task AdminMenuAsync(User admin, ProductService productService, UserService userService, DataContextEntity context)
     {
         while (true)
         {
@@ -110,29 +126,30 @@ class Program
             Console.WriteLine("6. View Sales");
             Console.WriteLine("7. Logout");
             Console.Write("Select an option: ");
-            string option = Console.ReadLine();
+            var option = Console.ReadLine();
 
             if (option == "1")
             {
                 Console.Write("Product Name: ");
-                string name = Console.ReadLine();
+                var name = Console.ReadLine();
                 Console.Write("Price: ");
-                decimal price = decimal.Parse(Console.ReadLine());
+                var price = decimal.Parse(Console.ReadLine());
                 Console.Write("Quantity: ");
-                int quantity = int.Parse(Console.ReadLine());
+                var quantity = int.Parse(Console.ReadLine());
                 Console.Write("Type: ");
-                string type = Console.ReadLine();
+                var type = Console.ReadLine();
 
                 Console.WriteLine("Select Category:");
-                for (int i = 0; i < DataContext.Categories.Count; i++)
+                for (int i = 0; i < context.Categories.Count(); i++)
                 {
-                    Console.WriteLine($"{i + 1}. {DataContext.Categories[i].Name}");
+                    Console.WriteLine($"{i + 1}. {context.Categories.ToList()[i].Name}");
                 }
-                int categoryIndex = int.Parse(Console.ReadLine()) - 1;
-                Category category = DataContext.Categories[categoryIndex];
+                var categoryIndex = int.Parse(Console.ReadLine()) - 1;
+                var category = context.Categories.ToList()[categoryIndex];
 
-                Product product = new Product(name, price, quantity, type, category);
+                var product = new Product { Name = name, Price = price, Quantity = quantity, Type = type, Category = category };
                 productService.AddProduct(product, admin);
+                context.SaveChanges();
                 Console.WriteLine("Product added successfully.");
                 Console.ReadLine();
             }
@@ -142,7 +159,7 @@ class Program
                 Console.WriteLine("=================================");
                 Console.WriteLine("         Product List            ");
                 Console.WriteLine("=================================");
-                foreach (var product in DataContext.Products)
+                foreach (var product in context.Products.Include(p => p.Category).ToList())
                 {
                     Console.WriteLine($"Name: {product.Name}, Price: {product.Price}, Quantity: {product.Quantity}, Type: {product.Type}, Category: {product.Category.Name}");
                     Console.WriteLine("---------------------------------");
@@ -152,26 +169,27 @@ class Program
             else if (option == "3")
             {
                 Console.Write("Enter product name to update: ");
-                string name = Console.ReadLine();
-                var product = DataContext.Products.FirstOrDefault(p => p.Name == name);
+                var name = Console.ReadLine();
+                var product = context.Products.Include(p => p.Category).FirstOrDefault(p => p.Name == name);
                 if (product != null)
                 {
                     Console.Write("New Price: ");
-                    decimal price = decimal.Parse(Console.ReadLine());
+                    var price = decimal.Parse(Console.ReadLine());
                     Console.Write("New Quantity: ");
-                    int quantity = int.Parse(Console.ReadLine());
+                    var quantity = int.Parse(Console.ReadLine());
                     Console.Write("New Type: ");
-                    string type = Console.ReadLine();
+                    var type = Console.ReadLine();
 
                     Console.WriteLine("Select New Category:");
-                    for (int i = 0; i < DataContext.Categories.Count; i++)
+                    for (int i = 0; i < context.Categories.Count(); i++)
                     {
-                        Console.WriteLine($"{i + 1}. {DataContext.Categories[i].Name}");
+                        Console.WriteLine($"{i + 1}. {context.Categories.ToList()[i].Name}");
                     }
-                    int categoryIndex = int.Parse(Console.ReadLine()) - 1;
-                    Category category = DataContext.Categories[categoryIndex];
+                    var categoryIndex = int.Parse(Console.ReadLine()) - 1;
+                    var category = context.Categories.ToList()[categoryIndex];
 
                     product.UpdateProduct(name, price, quantity, type, category);
+                    context.SaveChanges();
                     Console.WriteLine("Product updated successfully.");
                 }
                 else
@@ -183,11 +201,12 @@ class Program
             else if (option == "4")
             {
                 Console.Write("Enter product name to remove: ");
-                string name = Console.ReadLine();
-                var product = DataContext.Products.FirstOrDefault(p => p.Name == name);
+                var name = Console.ReadLine();
+                var product = context.Products.FirstOrDefault(p => p.Name == name);
                 if (product != null)
                 {
                     productService.RemoveProduct(product, admin);
+                    context.SaveChanges();
                     Console.WriteLine("Product removed successfully.");
                 }
                 else
@@ -199,15 +218,16 @@ class Program
             else if (option == "5")
             {
                 Console.Write("Enter user email to assign role: ");
-                string email = Console.ReadLine();
-                var user = DataContext.Users.FirstOrDefault(u => u.Email == email);
+                var email = Console.ReadLine();
+                var user = context.Users.FirstOrDefault(u => u.Email == email);
                 if (user != null)
                 {
                     Console.WriteLine("Select Role:");
                     Console.WriteLine("1. Admin");
                     Console.WriteLine("2. Cashier");
-                    int role = int.Parse(Console.ReadLine());
+                    var role = int.Parse(Console.ReadLine());
                     userService.SetUserRole(user, (UserRole)(role - 1));
+                    context.SaveChanges();
                     Console.WriteLine("Role assigned successfully.");
                 }
                 else
@@ -222,18 +242,13 @@ class Program
                 Console.WriteLine("=================================");
                 Console.WriteLine("           Sales List            ");
                 Console.WriteLine("=================================");
-                foreach (var sale in DataContext.Sales)
+                foreach (var sale in context.Sales.Include(s => s.Cashier).Include(s => s.SaleProducts).ThenInclude(sp => sp.Product).ToList())
                 {
-                    Console.WriteLine($"Date: {sale.Date}");
-                    Console.WriteLine($"Cashier: {sale.Cashier.Name}");
+                    Console.WriteLine($"Sale ID: {sale.SaleId}, Cashier: {sale.Cashier.Name}, Date: {sale.Date}");
                     foreach (var saleProduct in sale.SaleProducts)
                     {
-                        for (int i = 0; i < saleProduct.Products.Count; i++)
-                        {
-                            Console.WriteLine($"Product: {saleProduct.Products[i].Name}, Quantity: {saleProduct.Quantities[i]}, Total Price: {saleProduct.Products[i].Price * saleProduct.Quantities[i]}");
-                        }
+                        Console.WriteLine($"    Product: {saleProduct.Product.Name}, Quantity: {saleProduct.Quantity}, Price: {saleProduct.Product.Price}");
                     }
-                    Console.WriteLine($"Total Sale Amount: {sale.TotalAmount}");
                     Console.WriteLine("---------------------------------");
                 }
                 Console.ReadLine();
@@ -250,7 +265,7 @@ class Program
         }
     }
 
-    static void CashierMenu(User cashier, SaleTransactionService saleTransactionService, ProductService productService)
+    static async Task CashierMenuAsync(User cashier, SaleTransactionService saleTransactionService, ProductService productService, DataContextEntity context)
     {
         while (true)
         {
@@ -264,7 +279,7 @@ class Program
             Console.WriteLine("4. View Current Sale");
             Console.WriteLine("5. Logout");
             Console.Write("Select an option: ");
-            string option = Console.ReadLine();
+            var option = Console.ReadLine();
 
             if (option == "1")
             {
@@ -274,43 +289,46 @@ class Program
             }
             else if (option == "2")
             {
-                Console.WriteLine("=================================");
-                Console.WriteLine("         Product List            ");
-                Console.WriteLine("=================================");
-                for (int i = 0; i < DataContext.Products.Count; i++)
+                var currentSale = saleTransactionService.GetCurrentSale();
+                if (currentSale != null)
                 {
-                    var product = DataContext.Products[i];
-                    Console.WriteLine($"{i + 1}. Name: {product.Name}, Price: {product.Price}, Quantity: {product.Quantity}");
-                }
-
-                Console.Write("Select product by number: ");
-                int productIndex = int.Parse(Console.ReadLine()) - 1;
-
-                if (productIndex >= 0 && productIndex < DataContext.Products.Count)
-                {
-                    var selectedProduct = DataContext.Products[productIndex];
-                    Console.Write("Enter quantity: ");
-                    int quantity = int.Parse(Console.ReadLine());
-
-                    if (saleTransactionService.AddProductToSale(selectedProduct, quantity, cashier))
+                    Console.Write("Enter product name to add: ");
+                    var productName = Console.ReadLine();
+                    var product = context.Products.FirstOrDefault(p => p.Name == productName);
+                    if (product != null)
                     {
-                        Console.WriteLine("Product added to sale.");
+                        Console.Write("Enter quantity: ");
+                        var quantity = int.Parse(Console.ReadLine());
+
+                        var success = await saleTransactionService.AddProductToSaleAsync(product, quantity, cashier);
+                        if (success)
+                        {
+                            Console.WriteLine("Product added to sale.");
+                        }
                     }
                     else
                     {
-                        Console.WriteLine("Failed to add product to sale. Check product quantity.");
+                        Console.WriteLine("Product not found.");
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Invalid product selection.");
+                    Console.WriteLine("No active sale. Please start a new sale first.");
                 }
                 Console.ReadLine();
             }
             else if (option == "3")
             {
-                saleTransactionService.CompleteSale(cashier);
-                Console.WriteLine("Sale completed.");
+                var currentSale = saleTransactionService.GetCurrentSale();
+                if (currentSale != null)
+                {
+                    await saleTransactionService.CompleteSaleAsync(cashier);
+                    Console.WriteLine("Sale completed.");
+                }
+                else
+                {
+                    Console.WriteLine("No active sale. Please start a new sale first.");
+                }
                 Console.ReadLine();
             }
             else if (option == "4")
@@ -318,22 +336,19 @@ class Program
                 var currentSale = saleTransactionService.GetCurrentSale();
                 if (currentSale != null)
                 {
-                    Console.Clear();
                     Console.WriteLine("=================================");
-                    Console.WriteLine("       Current Sale Details      ");
+                    Console.WriteLine("         Current Sale            ");
                     Console.WriteLine("=================================");
+                    Console.WriteLine($"Cashier: {currentSale.Cashier.Name}");
                     foreach (var saleProduct in currentSale.SaleProducts)
                     {
-                        for (int i = 0; i < saleProduct.Products.Count; i++)
-                        {
-                            Console.WriteLine($"Product: {saleProduct.Products[i].Name}, Quantity: {saleProduct.Quantities[i]}, Price: {saleProduct.Products[i].Price * saleProduct.Quantities[i]}");
-                        }
+                        Console.WriteLine($"Product: {saleProduct.Product.Name}, Quantity: {saleProduct.Quantity}, Price: {saleProduct.Product.Price}");
                     }
-                    Console.WriteLine($"Total Sale Amount: {currentSale.TotalAmount}");
+                    Console.WriteLine("---------------------------------");
                 }
                 else
                 {
-                    Console.WriteLine("No sale in progress.");
+                    Console.WriteLine("No active sale.");
                 }
                 Console.ReadLine();
             }
@@ -348,4 +363,16 @@ class Program
             }
         }
     }
+
+    static IHostBuilder CreateHostBuilder() =>
+        Host.CreateDefaultBuilder()
+            .ConfigureServices((context, services) =>
+            {
+                services.AddDbContext<DataContextEntity>(options =>
+                    options.UseInMemoryDatabase("POSSystemDB"));
+
+                services.AddScoped<UserService>();
+                services.AddScoped<ProductService>();
+                services.AddScoped<SaleTransactionService>();
+            });
 }

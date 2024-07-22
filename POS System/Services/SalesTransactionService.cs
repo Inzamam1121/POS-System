@@ -1,19 +1,26 @@
 ﻿using POS_System.Data;
 using POS_System.Entities;
-using System.Linq;
+using System;
+using System.Threading.Tasks;
 
 namespace POS_System.Services
 {
     public class SaleTransactionService
     {
+        private readonly DataContextEntity _context;
         private Sale _currentSale;
+
+        public SaleTransactionService(DataContextEntity context)
+        {
+            _context = context;
+        }
 
         public void StartNewSale(User cashier)
         {
             _currentSale = new Sale(cashier);
         }
 
-        public bool AddProductToSale(Product product, int quantity, User cashier)
+        public async Task<bool> AddProductToSaleAsync(Product product, int quantity, User cashier)
         {
             if (_currentSale == null || _currentSale.Cashier != cashier)
             {
@@ -24,6 +31,10 @@ namespace POS_System.Services
             {
                 _currentSale.AddProductToSale(product, quantity);
                 product.Quantity -= quantity;
+
+                _context.Products.Update(product);
+                await _context.SaveChangesAsync();
+
                 return true;
             }
             else
@@ -33,11 +44,12 @@ namespace POS_System.Services
             }
         }
 
-        public void CompleteSale(User cashier)
+        public async Task CompleteSaleAsync(User cashier)
         {
             if (_currentSale != null && _currentSale.Cashier == cashier)
             {
-                DataContext.Sales.Add(_currentSale);
+                await _context.Sales.AddAsync(_currentSale);
+                await _context.SaveChangesAsync();
                 _currentSale = null;
             }
         }

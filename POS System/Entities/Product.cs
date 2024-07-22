@@ -2,12 +2,18 @@
 {
     public class Product
     {
-        public string Name { get; private set; }
-        public decimal Price { get; private set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public decimal Price { get; set; }
         public int Quantity { get; set; }
-        public string Type { get; private set; }
-        public Category Category { get; private set; }
+        public string Type { get; set; }
+        public int CategoryId { get; set; }
+        public Category Category { get; set; }
 
+        // Parameterless constructor for EF
+        public Product() { }
+
+        // Constructor for convenience
         public Product(string name, decimal price, int quantity, string type, Category category)
         {
             Name = name;
