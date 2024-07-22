@@ -14,13 +14,15 @@ namespace POS_System.Services
             _context = context;
         }
 
-        public async Task AddProduct(Product product, User admin)
+        public async Task<bool> AddProduct(Product product, User admin)
         {
             if (admin.Role == UserRole.Admin)
             {
                 await _context.Products.AddAsync(product);
                 await _context.SaveChangesAsync();
+                return true;
             }
+            return false;
         }
 
         public async Task RemoveProduct(Product product, User admin)
@@ -42,6 +44,17 @@ namespace POS_System.Services
             product.Quantity -= quantity;
             _context.Products.Update(product);
             _context.SaveChanges();
+        }
+
+        public async Task<bool> UpdateProduct(Product product, User admin)
+        {
+            if (admin.Role == UserRole.Admin)
+            {
+                _context.Products.Update(product);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            return false;
         }
     }
 }

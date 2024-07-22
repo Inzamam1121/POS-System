@@ -23,6 +23,23 @@
             Category = category;
         }
 
+        public Product(string name, decimal price, int quantity, string type)
+        {
+            Name = name;
+            Price = price;
+            Quantity = quantity;
+            Type = type;
+        }
+
+        public Product(string name, decimal price, int quantity, string type, int categoryId)
+        {
+            Name = name;
+            Price = price;
+            Quantity = quantity;
+            Type = type;
+            CategoryId = categoryId;
+        }
+
         public void UpdateProduct(string name, decimal price, int quantity, string type, Category category)
         {
             Name = name;
@@ -31,5 +48,6 @@
             Type = type;
             Category = category;
         }
+
     }
 }
