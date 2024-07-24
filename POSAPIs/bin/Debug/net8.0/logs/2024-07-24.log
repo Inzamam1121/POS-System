@@ -1,19 +1,23 @@
-2024-07-24 17:54:44.9995 INFO Application started. Press Ctrl+C to shut down. 
-2024-07-24 17:54:45.1434 INFO Hosting environment: Development 
-2024-07-24 17:54:45.1434 INFO Content root path: C:\Users\LENOVO\source\repos\POS System\POSAPIs 
-2024-07-24 17:54:49.7509 INFO Application started. Press Ctrl+C to shut down. 
-2024-07-24 17:54:49.7794 INFO Hosting environment: Development 
-2024-07-24 17:54:49.7794 INFO Content root path: C:\Users\LENOVO\source\repos\POS System\POSAPIs 
-2024-07-24 17:55:07.6449 INFO Saved 1 entities to in-memory store. 
-2024-07-24 17:55:13.0587 INFO Saved 1 entities to in-memory store. 
-2024-07-24 17:55:16.5799 INFO User Details: Id=2, Name=Inzamam, Role=Admin 
-2024-07-24 17:55:44.1014 INFO User Details: Id=1, Name=Mohsin, Role=Cashier 
-2024-07-24 17:56:20.1666 INFO Application started. Press Ctrl+C to shut down. 
-2024-07-24 17:56:20.1972 INFO Hosting environment: Development 
-2024-07-24 17:56:20.1972 INFO Content root path: C:\Users\LENOVO\source\repos\POS System\POSAPIs 
-2024-07-24 17:56:31.6570 INFO Saved 1 entities to in-memory store. 
-2024-07-24 17:56:36.4823 INFO Saved 1 entities to in-memory store. 
-2024-07-24 17:56:38.5972 INFO User Details: Id=2, Name=Inzamam, Role=Admin 
-2024-07-24 17:56:57.9981 INFO User Details Cat: Id=1, Name=Mohsin, Role=Cashier 
-2024-07-24 17:57:37.1524 INFO User Details: Id=2, Name=Inzamam, Role=Admin 
-2024-07-24 17:57:39.4394 INFO User Details: Id=2, Name=Inzamam, Role=Admin 
+2024-07-24 18:32:59.6946 INFO Application started. Press Ctrl+C to shut down. 
+2024-07-24 18:32:59.7948 INFO Hosting environment: Development 
+2024-07-24 18:32:59.7948 INFO Content root path: C:\Users\LENOVO\source\repos\POS System\POSAPIs 
+2024-07-24 18:33:11.3629 INFO Saved 1 entities to in-memory store. 
+2024-07-24 18:33:16.5644 INFO Saved 1 entities to in-memory store. 
+2024-07-24 18:33:21.4235 INFO User Details: Id=2, Name=Inzamam, Role=Admin 
+2024-07-24 18:33:42.9382 INFO User Details: Id=2, Name=Inzamam, Role=Admin 
+2024-07-24 18:34:15.8060 INFO User Details Cat: Id=1, Name=Mohsin, Role=Cashier 
+2024-07-24 18:35:27.5797 INFO User Details: Id=2, Name=Inzamam, Role=Admin 
+2024-07-24 18:35:55.1541 INFO User Details Cat: Id=2, Name=Inzamam, Role=Admin 
+2024-07-24 18:35:55.2136 INFO Saved 1 entities to in-memory store. 
+2024-07-24 18:36:21.4293 INFO User Details: Id=1, Name=Mohsin, Role=Cashier 
+2024-07-24 18:36:53.7755 INFO User Details Cat: Id=1, Name=Mohsin, Role=Cashier 
+2024-07-24 18:37:01.4659 INFO User Details Cat: Id=1, Name=Mohsin, Role=Cashier 
+2024-07-24 18:37:38.2739 INFO User Details: Id=2, Name=Inzamam, Role=Admin 
+2024-07-24 18:38:37.2285 INFO User Details Cat: Id=2, Name=Inzamam, Role=Admin 
+2024-07-24 18:38:37.2285 INFO Saved 1 entities to in-memory store. 
+2024-07-24 18:38:41.7465 INFO User Details Cat: Id=2, Name=Inzamam, Role=Admin 
+2024-07-24 18:38:53.1651 INFO User Details: Id=1, Name=Mohsin, Role=Cashier 
+2024-07-24 18:39:18.0898 INFO User Details: Id=1, Name=Mohsin, Role=Cashier 
+2024-07-24 18:39:18.0898 INFO User Mohsin is a cashier. 
+2024-07-24 18:39:18.0898 INFO Requesting Starting Sale... 
+2024-07-24 18:39:18.0898 INFO User Details: Id=1, Name=Mohsin, Role=Cashier 

@@ -10,11 +10,11 @@ namespace POS_System.Services
 {
     public class SaleTransactionService
     {
-        private readonly DataContextEntity _context;
+        private readonly DBContextEntity _context;
         private Sale _currentSale;
         private readonly ILogger<SaleTransactionService> _logger;
 
-        public SaleTransactionService(DataContextEntity context, ILogger<SaleTransactionService> logger)
+        public SaleTransactionService(DBContextEntity context, ILogger<SaleTransactionService> logger)
         {
             _context = context;
             _logger = logger;

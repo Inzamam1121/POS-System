@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace POS_System.Data
 {
-    public static class DataContext
+    public static class DBContext
     {
         public static List<User> Users { get; set; } = new List<User>();
         public static List<Product> Products { get; set; } = new List<Product>();

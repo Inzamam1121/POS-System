@@ -9,10 +9,10 @@ namespace POS_System.Services
 {
     public class PurchaseTransactionService
     {
-        private readonly DataContextEntity _context;
+        private readonly DBContextEntity _context;
         private Purchase _currentPurchase;
 
-        public PurchaseTransactionService(DataContextEntity context)
+        public PurchaseTransactionService(DBContextEntity context)
         {
             _context = context;
         }

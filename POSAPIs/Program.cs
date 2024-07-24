@@ -39,7 +39,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 });
 
 // Register the DataContextEntity with the in-memory database provider.
-builder.Services.AddDbContext<DataContextEntity>(options =>
+builder.Services.AddDbContext<DBContextEntity>(options =>
     options.UseInMemoryDatabase("InMemoryDb"));
 
 // Register the services

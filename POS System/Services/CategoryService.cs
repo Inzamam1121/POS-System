@@ -8,9 +8,9 @@ namespace POS_System.Services
 {
     public class CategoryService
     {
-        private readonly DataContextEntity _context;
+        private readonly DBContextEntity _context;
 
-        public CategoryService(DataContextEntity context)
+        public CategoryService(DBContextEntity context)
         {
             _context = context;
         }

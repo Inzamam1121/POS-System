@@ -10,9 +10,9 @@ namespace POS_System.Services
 {
     public class ProductService
     {
-        private readonly DataContextEntity _context;
+        private readonly DBContextEntity _context;
 
-        public ProductService(DataContextEntity context)
+        public ProductService(DBContextEntity context)
         {
             _context = context;
         }

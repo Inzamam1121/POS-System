@@ -8,9 +8,9 @@ namespace POS_System.Services
 {
     public class UserService
     {
-        private readonly DataContextEntity _context;
+        private readonly DBContextEntity _context;
 
-        public UserService(DataContextEntity context)
+        public UserService(DBContextEntity context)
         {
             _context = context;
         }
@@ -24,6 +24,7 @@ namespace POS_System.Services
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
         }
+
 
         public async Task<User> AuthenticateUserAsync(string emailOrUsername, string password)
         {

@@ -3,7 +3,7 @@ using POS_System.Entities;
 
 namespace POS_System.Data
 {
-    public class DataContextEntity : DbContext
+    public class DBContextEntity : DbContext
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Product> Products { get; set; }
@@ -12,7 +12,7 @@ namespace POS_System.Data
         public DbSet<ProductItem> ProductItems { get; set; }
         public DbSet<Purchase> Purchases { get; set; }
 
-        public DataContextEntity(DbContextOptions<DataContextEntity> options) : base(options)
+        public DBContextEntity(DbContextOptions<DBContextEntity> options) : base(options)
         {
         }
 
