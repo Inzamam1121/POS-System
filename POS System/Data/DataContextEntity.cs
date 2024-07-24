@@ -9,7 +9,8 @@ namespace POS_System.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Sale> Sales { get; set; }
-        public DbSet<SaleProduct> SaleProducts { get; set; }
+        public DbSet<ProductItem> ProductItems { get; set; }
+        public DbSet<Purchase> Purchases { get; set; }
 
         public DataContextEntity(DbContextOptions<DataContextEntity> options) : base(options)
         {
@@ -23,17 +24,25 @@ namespace POS_System.Data
                 .WithMany()
                 .HasForeignKey(s => s.CashierId);
 
-            // Configure Sale - SaleProduct relationship
+            // Configure Sale - ProductItem relationship
             modelBuilder.Entity<Sale>()
-                .HasMany(s => s.SaleProducts)
-                .WithOne(sp => sp.Sale)
-                .HasForeignKey(sp => sp.SaleId);
+                .HasMany(s => s.Products)
+                .WithOne()
+                .HasForeignKey(pi => pi.ProductItemId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            // Configure SaleProduct - Product relationship
-            modelBuilder.Entity<SaleProduct>()
-                .HasOne(sp => sp.Product)
+            // Configure Purchase - ProductItem relationship
+            modelBuilder.Entity<Purchase>()
+                .HasMany(p => p.Products)
+                .WithOne()
+                .HasForeignKey(pi => pi.ProductItemId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure ProductItem - Product relationship
+            modelBuilder.Entity<ProductItem>()
+                .HasOne(pi => pi.Product)
                 .WithMany()
-                .HasForeignKey(sp => sp.ProductId);
+                .HasForeignKey(pi => pi.ProductId);
 
             // Configure the primary key and relationships for Product and Category
             modelBuilder.Entity<Product>()

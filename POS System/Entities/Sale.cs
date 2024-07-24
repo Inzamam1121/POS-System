@@ -4,44 +4,49 @@ using System.Linq;
 
 namespace POS_System.Entities
 {
+    public enum SaleStatus
+    {
+        Start,
+        Pending,
+        Complete
+    }
+
     public class Sale
     {
         public int SaleId { get; set; }
         public int CashierId { get; set; }
         public User Cashier { get; set; }
         public DateTime Date { get; set; }
-        public List<SaleProduct> SaleProducts { get; set; } = new List<SaleProduct>();
-
-        public Sale(User cashier)
+        public SaleStatus Status { get; set; }
+        public List<ProductItem> Products { get; set; } = new List<ProductItem>();
+         
+        public Sale() { }
+         
+        public Sale(User cashier, SaleStatus status)
         {
             Cashier = cashier;
             Date = DateTime.Now;
+            Status = status;
         }
 
-        public Sale() { }
-
-        public void AddProductToSale(Product product, int quantity)
+        public void AddProduct(Product product, int quantity)
         {
-            var saleProduct = SaleProducts.FirstOrDefault(sp => sp.ProductId == product.Id);
-            if (saleProduct == null)
+            var productItem = Products.Find(p => p.ProductId == product.ProductId);
+            if (productItem == null)
             {
-                saleProduct = new SaleProduct
-                {
-                    ProductId = product.Id,
-                    Product = product,
-                    Quantity = 0
-                };
-                SaleProducts.Add(saleProduct);
+                Products.Add(new ProductItem(product, quantity));
             }
-
-            saleProduct.Quantity += quantity;
+            else
+            {
+                productItem.AddQuantity(quantity);
+            }
         }
 
         public decimal TotalAmount
         {
             get
             {
-                return SaleProducts.Sum(sp => sp.Product.Price * sp.Quantity);
+                return Products.Sum(pi => pi.TotalAmount);
             }
         }
     }

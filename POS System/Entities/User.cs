@@ -8,22 +8,25 @@
 
     public class User
     {
-        public int Id { get; set; } // Primary key
         public string Name { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
-        public UserRole Role { get; set; }
-
-        // Parameterless constructor for EF
+        public string Username { get; set; }
+        public string AccessToken { get; set; }
+        public int UserID { get; set; }
+        public UserRole UserRole { get; set; }
+         
         public User() { }
-
-        // Constructor for convenience
-        public User(string name, string email, string password, UserRole role)
+         
+        public User(string name, string email, string password, string username, string accessToken, int userId, UserRole userRole)
         {
             Name = name;
             Email = email;
             Password = password;
-            Role = role;
+            Username = username;
+            AccessToken = accessToken;
+            UserID = userId;
+            UserRole = userRole;
         }
     }
 }

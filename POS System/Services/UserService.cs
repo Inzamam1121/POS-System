@@ -1,4 +1,5 @@
-﻿using POS_System.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using POS_System.Data;
 using POS_System.Entities;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,23 +14,44 @@ namespace POS_System.Services
         {
             _context = context;
         }
+         
+        public async Task RegisterUserAsync(User user)
+        { 
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
+            if (existingUser != null)
+                throw new System.Exception("User with this email already exists.");
 
-        public async Task RegisterUser(User user)
-        {
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
         }
 
-        public User AuthenticateUser(string email, string password)
+        public async Task<User> AuthenticateUserAsync(string emailOrUsername, string password)
         {
-            return _context.Users.FirstOrDefault(u => u.Email == email && u.Password == password);
+            return await _context.Users
+                .FirstOrDefaultAsync(u => (u.Email == emailOrUsername || u.Username == emailOrUsername) && u.Password == password);
         }
 
-        public async Task SetUserRole(User user, UserRole role)
+        public async Task<bool> UpdateUserRoleAsync(string username, UserRole role)
         {
-            user.Role = role;
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            if (user == null)
+                return false;
+
+            user.UserRole = role;
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
+            return true;
         }
+
+        public async Task<List<User>> GetAllUsersAsync()
+        {
+            return await _context.Users.ToListAsync();
+        }
+
+        public async Task<User> GetUserByIdAsync(int userId)
+        {
+            return await _context.Users.FirstOrDefaultAsync(u => u.UserID == userId);
+        }
+
     }
 }
