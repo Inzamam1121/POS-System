@@ -21,14 +21,16 @@ namespace POSAPIs.Controllers
         private readonly string _jwtIssuer;
         private readonly string _jwtAudience;
         private readonly string _jwtSubject;
+        private readonly ILogger<UserController> _logger;
 
-        public UserController(UserService userService, IConfiguration configuration)
+        public UserController(UserService userService, IConfiguration configuration, ILogger<UserController> logger)
         {
             _userService = userService;
             _jwtKey = configuration["Jwt:Key"] ?? throw new ArgumentNullException("Jwt:Key", "JWT key must be provided.");
             _jwtIssuer = configuration["Jwt:Issuer"] ?? throw new ArgumentNullException("Jwt:Issuer", "JWT issuer must be provided.");
             _jwtAudience = configuration["Jwt:Audience"] ?? throw new ArgumentNullException("Jwt:Audience", "JWT audience must be provided.");
             _jwtSubject = configuration["Jwt:Subject"] ?? throw new ArgumentNullException("Jwt:Subject", "JWT subject must be provided.");
+            _logger = logger;
         }
 
         [HttpPost("register")]
@@ -48,12 +50,19 @@ namespace POSAPIs.Controllers
         [HttpPost("authenticate")]
         public async Task<IActionResult> Authenticate([FromBody] AuthModel authModel)
         {
-            var user = await _userService.AuthenticateUserAsync(authModel.EmailOrUsername, authModel.Password);
+            User user = await _userService.AuthenticateUserAsync(authModel.EmailOrUsername, authModel.Password);
             if (user == null)
             {
                 return Unauthorized(new { message = "Invalid email/username or password" });
             }
-
+            if (user != null)
+            {
+                _logger.LogInformation($"User Details: Id={user.UserID}, Name={user.Name}, Role={user.UserRole}");
+            }
+            else
+            {
+                _logger.LogError($"User not found while authentication");
+            }
             var token = GenerateJwtToken(user);
             return Ok(new { token });
         }

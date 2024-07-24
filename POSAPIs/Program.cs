@@ -6,8 +6,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using NLog.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddLogging(logging =>
+{
+    logging.ClearProviders();
+    logging.SetMinimumLevel(LogLevel.Trace);
+});
+
+builder.Services.AddSingleton<ILoggerProvider, NLogLoggerProvider>();
+
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -35,6 +45,9 @@ builder.Services.AddDbContext<DataContextEntity>(options =>
 // Register the services
 builder.Services.AddScoped<CategoryService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<SaleTransactionService>();
+builder.Services.AddScoped<PurchaseTransactionService>();
 
 var app = builder.Build();
 
@@ -48,7 +61,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseMiddleware<AuthMiddleware>();
-
 
 app.UseAuthentication();
 

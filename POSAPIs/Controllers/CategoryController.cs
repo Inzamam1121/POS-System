@@ -14,11 +14,13 @@ namespace POSAPIs.Controllers
     {
         private readonly CategoryService _categoryService;
         private readonly UserService _userService;
+        private readonly ILogger<CategoryController> _logger;
 
-        public CategoryController(CategoryService categoryService, UserService userService)
+        public CategoryController(CategoryService categoryService, UserService userService, ILogger<CategoryController> logger)
         {
             _categoryService = categoryService;
             _userService = userService;
+            _logger = logger;
         }
 
         [HttpPost("add")]
@@ -105,10 +107,12 @@ namespace POSAPIs.Controllers
             var userId = User.Claims.FirstOrDefault(c => c.Type == "id")?.Value;
             if (userId == null)
             {
+                _logger.LogError("UserID is null in Category");
                 return false;
             }
 
             var user = _userService.GetUserByIdAsync(int.Parse(userId)).Result;
+            _logger.LogInformation($"User Details Cat: Id={user.UserID}, Name={user.Name}, Role={user.UserRole}");
             return user != null && user.UserRole == UserRole.Admin;
         }
     }

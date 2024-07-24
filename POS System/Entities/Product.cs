@@ -12,13 +12,23 @@
          
         public Product() { }
          
-        public Product(string name, decimal price, int quantity, string type, int categoryId)
+        public Product( string name, decimal price, int quantity, string type, int categoryId)
         {
             Name = name;
             Price = price;
             Quantity = quantity;
             Type = type;
             CategoryId = categoryId;
+        }
+
+        public Product(int productid, string name, decimal price, int quantity, string type, int categoryId)
+        {
+            Name = name;
+            Price = price;
+            Quantity = quantity;
+            Type = type;
+            CategoryId = categoryId;
+            ProductId = productid;
         }
 
         public Product(string name, decimal price, int quantity, string type)

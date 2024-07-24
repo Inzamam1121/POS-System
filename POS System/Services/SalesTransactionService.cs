@@ -1,4 +1,5 @@
-﻿using POS_System.Data;
+﻿using Microsoft.Extensions.Logging;
+using POS_System.Data;
 using POS_System.Entities;
 using System;
 using System.IdentityModel.Tokens.Jwt;
@@ -11,19 +12,55 @@ namespace POS_System.Services
     {
         private readonly DataContextEntity _context;
         private Sale _currentSale;
+        private readonly ILogger<SaleTransactionService> _logger;
 
-        public SaleTransactionService(DataContextEntity context)
+        public SaleTransactionService(DataContextEntity context, ILogger<SaleTransactionService> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         private async Task<User> GetUserFromTokenAsync(string token)
         {
             var handler = new JwtSecurityTokenHandler();
             var jwtToken = handler.ReadJwtToken(token);
-            var userId = int.Parse(jwtToken.Claims.First(claim => claim.Type == "id").Value);
-            return await _context.Users.FindAsync(userId);
+
+            var userIdClaim = jwtToken.Claims.FirstOrDefault(claim => claim.Type == "id");
+
+            if (userIdClaim == null)
+            {
+                _logger.LogError("User ID claim not found in token.");
+                throw new Exception("User ID claim not found in token.");
+            }
+
+            var userId = int.Parse(userIdClaim.Value);
+            User user = await _context.Users.FindAsync(userId);
+
+            if (user != null)
+            {
+                _logger.LogInformation($"User Details: Id={user.UserID}, Name={user.Name}, Role={user.UserRole}");
+            }
+            else
+            {
+                _logger.LogError($"User with ID {userId} not found in the database.");
+            }
+
+            return user;
         }
+
+        public async Task<bool> IsCashierAsync(string token)
+        {
+            User user = await GetUserFromTokenAsync(token);
+            if (user != null && user.UserRole == UserRole.Cashier)
+            {
+                _logger.LogInformation($"User {user.Name} is a cashier.");
+                return true;
+            }
+            _logger.LogWarning($"User is not a cashier or not found. Role: {user?.UserRole}");
+            return false;
+        }
+
+
 
         public async Task<bool> StartNewSaleAsync(string token)
         {
