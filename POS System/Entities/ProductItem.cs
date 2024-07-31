@@ -11,10 +11,14 @@ namespace POS_System.Entities
     public class ProductItem
     {
         public int ProductItemId { get; set; }
+        public int SaleId { get; set; }
+        public Sale Sale { get; set; }
         public int ProductId { get; set; }
         public Product Product { get; set; }
         public int Quantity { get; set; }
-         
+        public decimal Price { get; set; }
+        public Purchase Purchase { get; set; }
+        public int PurchaseId { get; set; }
         public ProductItem() { }
          
         public ProductItem(int productId, int quantity)

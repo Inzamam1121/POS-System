@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("POSAPIs")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8763c3f58c72018710366364edc949a051269e3f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9ff0639640e0d1b8fa4612161871fa1c413f69e1")]
 [assembly: System.Reflection.AssemblyProductAttribute("POSAPIs")]
 [assembly: System.Reflection.AssemblyTitleAttribute("POSAPIs")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

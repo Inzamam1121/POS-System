@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using POS_System.Data;
 using POS_System.Entities;
 using System;
@@ -60,69 +61,105 @@ namespace POS_System.Services
             return false;
         }
 
-
-
         public async Task<bool> StartNewSaleAsync(string token)
         {
             var cashier = await GetUserFromTokenAsync(token);
             if (cashier == null || cashier.UserRole != UserRole.Cashier)
             {
-                Console.WriteLine("Invalid cashier.");
+                _logger.LogWarning("Invalid cashier.");
                 return false;
             }
 
-            _currentSale = new Sale(cashier, SaleStatus.Start);
+            _currentSale = new Sale
+            {
+                Cashier = cashier,
+                CashierId = cashier.UserID,
+                Date = DateTime.Now,
+                Status = SaleStatus.Start
+            };
+
+            await _context.Sales.AddAsync(_currentSale);
+            await _context.SaveChangesAsync();
+
             return true;
         }
 
         public async Task<bool> AddProductToSaleAsync(int productId, int quantity, string token)
         {
             var cashier = await GetUserFromTokenAsync(token);
-            if (_currentSale == null || _currentSale.Cashier != cashier)
+            if (cashier == null || cashier.UserRole != UserRole.Cashier)
             {
-                if (!await StartNewSaleAsync(token))
-                {
-                    return false;
-                }
+                _logger.LogWarning("Invalid cashier.");
+                return false;
+            }
+
+            if (_currentSale == null)
+            {
+                _logger.LogWarning("No sale in progress.");
+                return false;
             }
 
             var product = await _context.Products.FindAsync(productId);
             if (product == null)
             {
-                Console.WriteLine("Product not found.");
+                _logger.LogWarning("Product not found.");
                 return false;
             }
 
-            if (product.Quantity >= quantity)
+            if (product.Quantity < quantity)
             {
-                _currentSale.AddProduct(product, quantity);
-                product.Quantity -= quantity;
+                _logger.LogWarning("Insufficient quantity in inventory.");
+                return false;
+            }
 
-                _context.Products.Update(product);
-                await _context.SaveChangesAsync();
+            _currentSale.AddProduct(product, quantity);
+            product.Quantity -= quantity;
 
-                return true;
+            _context.Products.Update(product);
+
+            // Handle ProductItem entity
+            var productItem = _currentSale.Products.FirstOrDefault(pi => pi.ProductId == productId);
+            if (productItem != null)
+            {
+                productItem.Quantity = quantity; // Update quantity if product already in sale
             }
             else
             {
-                Console.WriteLine("Insufficient quantity in inventory.");
+                _currentSale.Products.Add(new ProductItem
+                {
+                    ProductId = productId,
+                    Quantity = quantity,
+                    SaleId = _currentSale.SaleId
+                });
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                _logger.LogError(ex, "Concurrency exception occurred while adding product to sale.");
+                // Handle concurrency exception (e.g., retry or notify user)
                 return false;
             }
         }
+
 
         public async Task<bool> RemoveProductFromSaleAsync(int productId, int quantity, string token)
         {
             var cashier = await GetUserFromTokenAsync(token);
             if (_currentSale == null || _currentSale.Cashier != cashier)
             {
-                Console.WriteLine("No sale in progress or wrong cashier.");
+                _logger.LogWarning("No sale in progress or wrong cashier.");
                 return false;
             }
 
             var productItem = _currentSale.Products.FirstOrDefault(pi => pi.ProductId == productId);
             if (productItem == null || productItem.Quantity < quantity)
             {
-                Console.WriteLine("Product not found in sale or insufficient quantity.");
+                _logger.LogWarning("Product not found in sale or insufficient quantity.");
                 return false;
             }
 
@@ -138,8 +175,10 @@ namespace POS_System.Services
             {
                 product.Quantity += quantity;
                 _context.Products.Update(product);
-                await _context.SaveChangesAsync();
             }
+
+            _context.ProductItems.Update(productItem);  
+            await _context.SaveChangesAsync();
 
             return true;
         }
@@ -151,8 +190,10 @@ namespace POS_System.Services
             {
                 _currentSale.Date = DateTime.Now;
                 _currentSale.Status = SaleStatus.Complete;
-                await _context.Sales.AddAsync(_currentSale);
+
+                _context.Sales.Update(_currentSale);
                 await _context.SaveChangesAsync();
+
                 _currentSale = null;
                 return true;
             }

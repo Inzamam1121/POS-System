@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using POS_System.Entities;
 using POS_System.Services;
 using System.Threading.Tasks;
+using POSAPIs.Model;
 
 namespace POSAPIs.Controllers
 {
@@ -138,21 +139,5 @@ namespace POSAPIs.Controllers
             }
             return Ok(new { message = "Product quantity updated successfully" });
         }
-    }
-
-    public class UpdateQuantityModel
-    {
-        public int ProductId { get; set; }
-        public int Quantity { get; set; }
-    }
-
-    public class ProductModel
-    {
-        public string name { get; set; }
-        public int price { get; set; }
-        public int quantity { get; set; }
-        public string type { get; set; }
-        public int categoryId { get; set; }
-        public int productid {  get; set; }
     }
 }

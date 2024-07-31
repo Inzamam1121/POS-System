@@ -18,39 +18,79 @@ namespace POS_System.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Configure the decimal precision for Price
+            modelBuilder.Entity<Product>()
+                .Property(p => p.Price)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<ProductItem>()
+                .Property(pi => pi.Price)
+                .HasColumnType("decimal(18,2)");
+
             // Configure User - Sale relationship
             modelBuilder.Entity<Sale>()
                 .HasOne(s => s.Cashier)
                 .WithMany()
-                .HasForeignKey(s => s.CashierId);
+                .HasForeignKey(s => s.CashierId)
+                .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete from User to Sale
 
             // Configure Sale - ProductItem relationship
             modelBuilder.Entity<Sale>()
                 .HasMany(s => s.Products)
-                .WithOne()
-                .HasForeignKey(pi => pi.ProductItemId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // Configure Purchase - ProductItem relationship
-            modelBuilder.Entity<Purchase>()
-                .HasMany(p => p.Products)
-                .WithOne()
-                .HasForeignKey(pi => pi.ProductItemId)
+                .WithOne(pi => pi.Sale)
+                .HasForeignKey(pi => pi.SaleId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Configure ProductItem - Product relationship
             modelBuilder.Entity<ProductItem>()
                 .HasOne(pi => pi.Product)
-                .WithMany()
-                .HasForeignKey(pi => pi.ProductId);
+                .WithMany(p => p.ProductItems)
+                .HasForeignKey(pi => pi.ProductId)
+                .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete from Product to ProductItem
 
-            // Configure the primary key and relationships for Product and Category
+            // Configure Product - Category relationship
             modelBuilder.Entity<Product>()
                 .HasOne(p => p.Category)
-                .WithMany()
-                .HasForeignKey(p => p.CategoryId);
+                .WithMany(c => c.Products)
+                .HasForeignKey(p => p.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete from Category to Product
+
+            // Configure primary key for ProductItem
+            modelBuilder.Entity<ProductItem>()
+                .HasKey(pi => new { pi.SaleId, pi.ProductId });
+
+            // Configure relationships in ProductItem
+            modelBuilder.Entity<ProductItem>()
+                .HasOne(pi => pi.Sale)
+                .WithMany(s => s.Products)
+                .HasForeignKey(pi => pi.SaleId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ProductItem>()
+                .HasOne(pi => pi.Product)
+                .WithMany(p => p.ProductItems)
+                .HasForeignKey(pi => pi.ProductId)
+                .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete from Product to ProductItem
+
+            // Configure Purchase - ProductItem relationship
+            modelBuilder.Entity<Purchase>()
+                .HasMany(p => p.Products)
+                .WithOne(pi => pi.Purchase)
+                .HasForeignKey(pi => pi.PurchaseId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             base.OnModelCreating(modelBuilder);
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlServer(
+                    "Server=INZAMAM-9VR3CJN\\SQLEXPRESS;Database=POSSystem;Trusted_Connection=True;TrustServerCertificate=True;",
+                    options => options.MigrationsAssembly("POSAPIs")
+                );
+            }
         }
     }
 }

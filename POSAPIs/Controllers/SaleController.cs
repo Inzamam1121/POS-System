@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using POS_System.Services;
 using System.Threading.Tasks;
+using POSAPIs.Model;
 
 namespace POSAPIs.Controllers
 {
@@ -33,11 +34,11 @@ namespace POSAPIs.Controllers
             {
                 return Ok(new { message = "Sale started successfully" });
             }
-            return Unauthorized(new { message = "Unable to start sale" });
+            return BadRequest(new { message = "Unable to start sale" });
         }
 
         [HttpPost("addproduct")]
-        public async Task<IActionResult> AddProductToSale([FromHeader] string Authorization, [FromBody] AddProductToSaleModel model)
+        public async Task<IActionResult> AddProductToSale([FromHeader] string Authorization, [FromBody] SaleProductModel model)
         {
             var token = Authorization.Split(' ')[1];
             var isCashier = await _saleTransactionService.IsCashierAsync(token);
@@ -55,7 +56,7 @@ namespace POSAPIs.Controllers
         }
 
         [HttpPost("removeproduct")]
-        public async Task<IActionResult> RemoveProductFromSale([FromHeader] string Authorization, [FromBody] RemoveProductFromSaleModel model)
+        public async Task<IActionResult> RemoveProductFromSale([FromHeader] string Authorization, [FromBody] SaleProductModel model)
         {
             var token = Authorization.Split(' ')[1];
             var isCashier = await _saleTransactionService.IsCashierAsync(token);
@@ -91,10 +92,10 @@ namespace POSAPIs.Controllers
         }
 
         [HttpGet("current")]
-        public IActionResult GetCurrentSale([FromHeader] string Authorization)
+        public async Task<IActionResult> GetCurrentSale([FromHeader] string Authorization)
         {
             var token = Authorization.Split(' ')[1];
-            var isCashier = _saleTransactionService.IsCashierAsync(token).Result;
+            var isCashier = await _saleTransactionService.IsCashierAsync(token);
             if (!isCashier)
             {
                 return Unauthorized(new { message = "Only cashiers can view the current sale." });
@@ -107,17 +108,5 @@ namespace POSAPIs.Controllers
             }
             return NotFound(new { message = "No sale in progress" });
         }
-    }
-
-    public class AddProductToSaleModel
-    {
-        public int ProductId { get; set; }
-        public int Quantity { get; set; }
-    }
-
-    public class RemoveProductFromSaleModel
-    {
-        public int ProductId { get; set; }
-        public int Quantity { get; set; }
     }
 }

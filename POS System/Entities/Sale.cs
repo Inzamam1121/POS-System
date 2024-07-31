@@ -19,7 +19,7 @@ namespace POS_System.Entities
         public DateTime Date { get; set; }
         public SaleStatus Status { get; set; }
         public List<ProductItem> Products { get; set; } = new List<ProductItem>();
-         
+
         public Sale() { }
          
         public Sale(User cashier, SaleStatus status)

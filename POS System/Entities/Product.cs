@@ -9,7 +9,8 @@
         public string Type { get; set; }
         public int CategoryId { get; set; }
         public Category Category { get; set; }
-         
+        public ICollection<ProductItem> ProductItems { get; set; } = new List<ProductItem>();
+
         public Product() { }
          
         public Product( string name, decimal price, int quantity, string type, int categoryId)

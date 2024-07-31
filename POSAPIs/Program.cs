@@ -40,7 +40,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 
 // Register the DataContextEntity with the in-memory database provider.
 builder.Services.AddDbContext<DBContextEntity>(options =>
-    options.UseInMemoryDatabase("InMemoryDb"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlServerOptions => sqlServerOptions
+            .EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(30),
+                errorNumbersToAdd: null)
+            .MigrationsAssembly("POSAPIs")));
+
 
 // Register the services
 builder.Services.AddScoped<CategoryService>();

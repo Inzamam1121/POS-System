@@ -9,6 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using POSAPIs.Model;
 
 namespace POSAPIs.Controllers
 {
@@ -130,15 +131,7 @@ namespace POSAPIs.Controllers
         }
     }
 
-    public class AuthModel
-    {
-        public string EmailOrUsername { get; set; }
-        public string Password { get; set; }
-    }
+    
 
-    public class SetRoleModel
-    {
-        public string Username { get; set; }
-        public UserRole Role { get; set; }
-    }
+    
 }
